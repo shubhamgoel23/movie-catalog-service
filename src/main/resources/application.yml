@@ -7,4 +7,3 @@ eureka:
    instance:
       hostname: ${DOMAIN_NAME:localhost}
       nonSecurePort: 80
-   
