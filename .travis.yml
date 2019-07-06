@@ -1,3 +1,7 @@
+<<<<<<< HEAD
 language: java
 jdk:
     openjdk12
+=======
+language: java
+>>>>>>> refs/remotes/origin/master
