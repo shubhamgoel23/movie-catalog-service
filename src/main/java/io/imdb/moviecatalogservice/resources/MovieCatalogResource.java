@@ -5,33 +5,31 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import io.imdb.moviecatalogservice.models.CatalogItem;
-import io.imdb.moviecatalogservice.models.Movie;
 import io.imdb.moviecatalogservice.models.UserRating;
+import io.imdb.moviecatalogservice.service.MovieInfo;
+import io.imdb.moviecatalogservice.service.UserRatingInfo;
 
 @RestController
 @RequestMapping("/catalog")
 public class MovieCatalogResource {
 
-	@Lazy
 	@Autowired
-	private RestTemplate restTemplate;
+	private MovieInfo movieInfo;
 
-	@Lazy
 	@Autowired
-	private WebClient.Builder webClientBuilder;
-	
+	private UserRatingInfo userRatingInfo;
+
 	private DiscoveryClient discoveryClient;
 
 	@RequestMapping("/{userId}")
-	public List<CatalogItem> getCatalog(@PathVariable("userId") String userId) {
+//	@HystrixCommand(fallbackMethod = "getFallbackCatalog")
+	public List<CatalogItem> getCatalog(
+			@PathVariable("userId") String userId) {
 
 //		WebClient.Builder builder = WebClient.builder();
 
@@ -40,28 +38,26 @@ public class MovieCatalogResource {
 //		List<Rating> ratings = Arrays.asList(new Rating("123", 4), new Rating("223", 5));
 
 //		ParameterizedTypeReference<List<Rating>> ratingList = new ParameterizedTypeReference<List<Rating>>() {};
-		
+
 //		UserRating userRating = restTemplate.getForObject("http://localhost:8083/ratingsData/users/" + userId,
 //				UserRating.class);
-		
-		//eureka way
-		UserRating userRating = restTemplate.getForObject("http://rating-data-service/ratingsData/users/" + userId,
-				UserRating.class);
+
+		// eureka way
+		UserRating userRating = userRatingInfo.getUserRating(userId);
+
 		// for each movie ID, call movie info service and get details
 		return userRating.getUserRating().stream().map(rating -> {
 //			Movie movie = restTemplate.getForObject("http://localhost:8082/movies/" + rating.getMovieId(), Movie.class);
-			
-			//eureka way
+
+			// eureka way
 //			Movie movie = restTemplate.getForObject("http://movie-info-service/movies/" + rating.getMovieId(), Movie.class);
-			
-			
+
 //			Movie movie = webClientBuilder.build().get().uri("http://localhost:8082/movies/" + rating.getMovieId())
 //					.retrieve().bodyToMono(Movie.class).block();
-			
-			//eureka way
-			Movie movie = webClientBuilder.build().get().uri("http://movie-info-service/movies/" + rating.getMovieId())
-					.retrieve().bodyToMono(Movie.class).block();
-			return new CatalogItem(movie.getName(), "", rating.getRating());
+
+			// eureka way
+			return movieInfo.getCatalogItem(rating);
+
 		}).collect(Collectors.toList());
 
 		// put them all together
