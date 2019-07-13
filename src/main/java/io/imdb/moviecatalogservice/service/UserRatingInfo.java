@@ -20,7 +20,7 @@ public class UserRatingInfo {
 	@Autowired
 	private RestTemplate restTemplate;
 
-	@HystrixCommand(fallbackMethod = "getFallbackUserRating", threadPoolKey = "movieInfoPool", threadPoolProperties = {
+	@HystrixCommand(fallbackMethod = "getFallbackUserRating", threadPoolKey = "userRatingInfoPool", threadPoolProperties = {
 			@HystrixProperty(name = "coreSize", value = "10"),
 			@HystrixProperty(name = "maxQueueSize", value = "5") }, commandProperties = {
 					@HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "2000"),
